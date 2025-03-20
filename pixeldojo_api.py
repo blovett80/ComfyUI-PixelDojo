@@ -84,6 +84,20 @@ class PixelDojoAPI:
             payload["lora_weights"] = lora_weights
             payload["lora_scale"] = lora_scale
 
+        def extract_image_url(img_data):
+            """Safely extract image URL from various response formats"""
+            if isinstance(img_data, str):
+                return img_data
+            elif isinstance(img_data, dict):
+                if 'url' in img_data:
+                    return img_data['url']
+                # Try to find any key that might contain a URL
+                for key, value in img_data.items():
+                    if isinstance(value, str) and (value.startswith('http://') or value.startswith('https://')):
+                        return value
+            # If we can't extract a URL, return the original data for error reporting
+            return str(img_data)
+
         try:
             response = requests.post(
                 "https://pixeldojo.ai/api/v1/flux",
@@ -105,20 +119,49 @@ class PixelDojoAPI:
             # Parse response
             data = response.json()
             
+            # Debug the response structure if needed
+            print(f"API Response: {json.dumps(data, indent=2)}")
+            
+            if "images" not in data or not data["images"]:
+                raise ValueError(f"No images found in API response: {json.dumps(data, indent=2)}")
+            
             # Process all returned images
             images = []
-            for img_url in data.get("images", []):
-                img_response = requests.get(img_url)
-                image = Image.open(io.BytesIO(img_response.content))
-                
-                # Convert to RGB if image has alpha channel
-                if image.mode == 'RGBA':
-                    image = image.convert('RGB')
+            for img_data in data.get("images", []):
+                try:
+                    img_url = extract_image_url(img_data)
                     
-                # Convert PIL image to torch tensor
-                image_np = np.array(image).astype(np.float32) / 255.0
-                image_tensor = torch.from_numpy(image_np)[None,]
-                images.append(image_tensor)
+                    # Print the URL for debugging
+                    print(f"Downloading image from: {img_url}")
+                    
+                    # Handle case where img_url might still be a dictionary string representation
+                    if img_url.startswith("{") and img_url.endswith("}"):
+                        try:
+                            # Try to parse it as JSON and extract the URL
+                            url_dict = json.loads(img_url.replace("'", "\""))
+                            if isinstance(url_dict, dict) and 'url' in url_dict:
+                                img_url = url_dict['url']
+                                print(f"Extracted URL from dictionary string: {img_url}")
+                        except json.JSONDecodeError:
+                            # If it can't be parsed as JSON, we'll try to use it as is
+                            print(f"Could not parse as JSON: {img_url}")
+                    
+                    img_response = requests.get(img_url)
+                    if img_response.status_code != 200:
+                        raise ValueError(f"Failed to download image from {img_url}, status code: {img_response.status_code}")
+                    
+                    image = Image.open(io.BytesIO(img_response.content))
+                    
+                    # Convert to RGB if image has alpha channel
+                    if image.mode == 'RGBA':
+                        image = image.convert('RGB')
+                        
+                    # Convert PIL image to torch tensor
+                    image_np = np.array(image).astype(np.float32) / 255.0
+                    image_tensor = torch.from_numpy(image_np)[None,]
+                    images.append(image_tensor)
+                except Exception as e:
+                    raise ValueError(f"Error processing image {img_data}: {str(e)}")
             
             # If we have images, combine them into a batch
             if images:
