@@ -1,3 +1,11 @@
+"""
+PixelDojo ComfyUI Node
+A ComfyUI extension for using PixelDojo's Flux API to generate high-quality images directly within ComfyUI workflows.
+
+Repository: https://github.com/blovett80/ComfyUI-PixelDojo
+License: MIT
+"""
+
 import os
 import json
 import requests

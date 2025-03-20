@@ -36,7 +36,7 @@ If you have the ComfyUI Manager installed:
 2. Clone this repository:
 ```bash
 cd custom_nodes
-git clone https://github.com/pixeldojo/ComfyUI-PixelDojo
+git clone https://github.com/blovett80/ComfyUI-PixelDojo
 ```
 3. Restart ComfyUI
 
@@ -128,7 +128,7 @@ If no images are returned:
 ## Support
 
 For issues with the ComfyUI extension:
-- Open an issue on our [GitHub repository](https://github.com/pixeldojo/ComfyUI-PixelDojo)
+- Open an issue on our [GitHub repository](https://github.com/blovett80/ComfyUI-PixelDojo)
 
 For questions about PixelDojo or API credits:
 - Contact PixelDojo support through your account dashboard
