@@ -1,0 +1,14 @@
+[project]
+name = "pixeldojo"
+description = "A ComfyUI extension for using PixelDojo's Flux API to generate high-quality images directly within ComfyUI workflows."
+version = "1.0.0"
+license = {file = "LICENSE"}
+
+[project.urls]
+Repository = "https://github.com/blovett80/ComfyUI-PixelDojo"
+#  Used by Comfy Registry https://comfyregistry.org
+
+[tool.comfy]
+PublisherId = ""
+DisplayName = "ComfyUI-PixelDojo"
+Icon = ""
