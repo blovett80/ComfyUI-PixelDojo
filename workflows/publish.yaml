@@ -1,0 +1,25 @@
+name: Publish to Comfy Registry
+
+on:
+  push:
+    branches:
+      - main  # or 'master' depending on your default branch name
+  workflow_dispatch:  # Allows manual triggering
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Publish to Comfy Registry
+        env:
+          REGISTRY_ACCESS_TOKEN: ${{ secrets.REGISTRY_ACCESS_TOKEN }}
+        run: |
+          curl -X POST "https://api.comfyworkflows.com/registry/publish" \
+          -H "Authorization: Bearer $REGISTRY_ACCESS_TOKEN" \
+          -H "Content-Type: application/json" \
+          -d '{
+            "repository": "${{ github.repository }}",
+            "commit": "${{ github.sha }}"
+          }'
